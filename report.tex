@@ -1,0 +1,172 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=0.5in]{geometry}
+\usepackage[bottom]{footmisc}
+
+\begin{document}
+\title{CS454 Assignment 02 Report}
+\author{Kyu-Sang Kim (20196553)}
+\maketitle
+
+\section{Overview}
+This report outlines the following for KAIST CS341 Lab 02 developed by Kyu-Sang Kim:
+
+\begin{enumerate}
+	\item Approach to the TSP Problem
+	\item Build Instructions
+	\item Execute Instructions
+	\item Self-Test Methodology and Results
+	\item Structure of Program with brief explanations
+\end{enumerate}
+
+Each of the items will be answered in their own sections.
+
+\section{Approach to the TSP Problem}
+The following subsections detail the process in how I decide to implement the solver for the TSP problem.
+
+\subsection{Choice of Implementation Programming Language}
+As the TSP problem is NP-hard problem that is considered a benchmark for optimisation, I decided to use C++ as the language of the implementation as it is considered one of the faster languages and every reduction of speed would be important for larger TSP problems.
+
+\subsection{Choice of Optimisation Algorithm}
+As the assignment restricted choices to be that of stochastic optimisation, I researched various metaheuristic algorithms and very quickly came to the conclusion that a Genetic Algorithm will be the best algorithm for the job as various papers mention the Genetic Algorithm to be one of the faster TSP solvers when combined with a good Local Search optimisation alogorithm. It was also seen that selection wheel mating were one of the more optimal choices for selection.
+
+\subsection{Choice of Local Search Optimisation Algorithm} 
+There is widespread consensus that the LKH (Lin-Kernighan Heuristic) is the best local search optimisation algorithm that exists for the TSP problem. However, after further review, I decided to utilise the 2-opt local search algorithm due to the potential for misimplementation of the LKH algorithm due to it's complexity and lack of testing with the C++ language as most implementation snippets are shown to be in Java. I also believe that utilising 2-opt would be faster when attempting to optimise each generation to allow for more genetic mating and subsequently allow for lucky reductions in travel distance.
+
+\section{Assignment Build Instructions}
+The project can be built by calling the \texttt{make} utility present in most unix terminals. Issuing a \texttt{make} command on terminal will automatically compile and link object code to generate an executable. I list the following \texttt{make} targets for specific build requirements.
+
+\begin{enumerate}
+	\item \texttt{make} or \texttt{make all}\\
+		This target will generate all object files for \texttt{tsp} and link them into the tsp executable. By default, the \texttt{make} command is the equivalent to \texttt{make all}. This target will usually be the one used for most build requirements.
+	
+	\item \texttt{make clean}\\
+		This target will remove all generated object files, log files and executables related to the tsp executable.
+\end{enumerate}
+
+\section{Assignment Execute Instructions}
+The following command and brief explanations on the parameters provide the executables with the correct functionality as per the project specification and some extra functionality.
+
+\begin{enumerate}
+	\item \texttt{./tsp \{filename\} [-pflerst parameter]}\\\\
+		The above executes the TSP solver with initialising information that are passed in as parameters. They are explained in further detail below. All possible parameters must be included for the program to function correctly.\\
+	
+	\item \texttt{-p \{population\_size\}}\\\\
+		The above takes in a population\_size integer that will be the amount of chromosomes that each generation will have. I suggest this number be atleast 30 at the minimum but it can be made smaller with bigger problem sets.\\
+		
+	\item \texttt{-f \{fitness\_evaluations\}}\\\\
+	The above takes in a fitness\_evaluations unsigned long long int that will be the total amount of fitness evaluations that the program will perform. If the total is reached during optimisation of a generation, it will stop optimisation right away, write the best solution found to the \texttt{solution.csv} file and output the best distance found. I suggest this number be 20 generations multiplied by the \{local\_threshold\} and \{population\_size\}.\\
+	
+	\item \texttt{-l \{local\_threshold\}}\\\\
+	The above takes in a local\_threshold integer that will be the amount of fitness evaluations during the local optimisation of each chromosome in the generation. I suggest this number to be 25000 to allow for an adequate amount of local optimisation.\\
+	
+	\item \texttt{-e \{elite\_rate\}}\\\\
+	The above takes in a elite\_rate float that will be the percentage (out of 100\%) of the population size that will be automatically in the new generation. I suggest this number to be 20 to allow for better results to be shielded from the inherent randomness of Genetic Algorithms.\\
+	
+	\pagebreak
+	
+	\item \texttt{-r \{mutation\_rate\}}\\\\
+	The above takes in a mutation\_rate float that will be the percentage (out of 100\%) that a select chromosome will be subject to a mutation. The mutation will be further detailed in the function responsible for mutation. I suggest this number to be 20 to ensure some randomness for the Genetic Algorithms so a local minimum is not reached if possible.\\
+	
+	\item \texttt{-s \{mutation\_size\}}\\\\
+	The above takes in a mutation\_size float that will be the percentage (out of 100\%) of the chromosome size that will be subject to a mutation when chosen for mutation. The mutation will be further detailed in the function responsible for mutation. I suggest this number to be 20 to ensure some randomness for the Genetic Algorithms so a local minimum is not reached if possible.\\
+	
+	\item \texttt{-t \{warn\_threshold\}}\\\\
+	The above takes in a warn\_threshold integer that will be the amount of times that a non-improvement of the best result during the local optimisation per generation will be ignored per solve instance. I suggest this number to be 10 to allow for a potential local minimum that may be able to be skipped by the inherent randomness of the Genetic Algorithm.\\
+\end{enumerate}
+
+\section{Self-Test Methodology and Results}
+In order to ensure that the program meets and performs to the definitions of the specification, some test cases such as the \texttt{att48.tsp} instance was run using the above commands with the suggested parameters. The results approached the best known optimal solutions but were unable to completely match them. Sometimes it missed the global optimum by 300\% outlining the luck involved to reach the global optimum.
+
+\section{Structure of Programs}
+\subsection{Source Files}
+
+\begin{enumerate}
+	\item \texttt{tsp.cpp}\\
+	This file contains the code that will read in the data from a chosen file (by parameter), process the data and initialise the genetic algorithm routine.
+	
+	\item \texttt{matrix.cpp}\\
+	This file contains the code that will process the data from the chosen file into a vector of \texttt{city\_node} objects essential for the running of the genetic algorithm routine.
+	
+	\item \texttt{ga\_frame.cpp}\\
+	This file contains the code that will establish a genetic algorithm framework and execute an genetic algorithm instance that will attempt to solve the given TSP Problem via finding the best path to travel all the nodes in the vector of objects provided by the matrix program.
+	
+	\item \texttt{matrix.hpp}\\
+	This header file contains the function prototypes and class declarations that are useful and common to both \texttt{tsp} and \texttt{ga\_frame} source code files.
+	
+	\item \texttt{ga\_frame.hpp}\\
+	This header file contains the function prototypes and class declarations that are used in the ga\_frame source code. There is a header guard in place due to some overlap with \texttt{matrix.hpp}, namely the \texttt{city\_node} class.
+	
+	\item \texttt{Makefile}\\
+	This file allows the \texttt{make} utility present in most unix-based terminals to compile and link the executable for \texttt{tsp} automatically.
+	
+\end{enumerate}
+
+\subsection{Source Functions}
+This section will briefly outline some important functions present in the code. More detailed information on the functions are available as inline comments in the source files.
+
+\subsubsection{Debug}
+\begin{enumerate}
+	\item \texttt{void print\_population(std::vector <int> population)}\\
+	This function is a debug print function that will print out each element of the population including chromosome and fitness.
+\end{enumerate}
+
+\subsubsection{matrix}
+\begin{enumerate}
+	\item \texttt{std::vector <city\_node> create\_node\_vector(const std::string \&filename)}\\
+	This function generates a vector of city nodes by processing the file given by \texttt{filename}.
+	
+	\item \texttt{static std::vector <std::string> tokenise(const std::string \&line)}\\
+	This function tokenises a given line by splitting the line with a space delimiter and pushing into a token string vector.
+	
+	\item \texttt{static int parse\_dimension(const std::string \&line)}\\
+	This function parses an int from a given line as the dimension.
+	
+	\item \texttt{static city\_node *parse\_node(const std::string \&line)}\\
+	This function returns a \texttt{city\_node} pointer that points to a processed \texttt{city\_node} object from the given line.
+\end{enumerate}
+
+\subsubsection{ga\_frame}
+
+\begin{enumerate}
+	\item \texttt{int ga\_main(std::vector <city\_node> node\_list, int population\_size, unsigned long long int total\_evaluations, int local\_threshold, float elite\_rate, float mutation\_rate, float mutation\_size, int warn\_threshold)}\\
+	This function is the main Genetic Algorithm driver and is the routine that governs the entire solving process.
+	
+	\item \texttt{std::vector <int> create\_genome(std::vector <int> main\_genome)}\\
+	This function creates a random solution by shuffling and returning a seed genome known as \texttt{main\_genome}.
+	
+	\item \texttt{unsigned long local\_opt(std::vector <Individual> \&population, std::vector <city\_node> node\_list, int max\_calc)}\\
+	This function takes a population address, node\_list and maximum amount of fitness calculations to apply one generation of 2-opt local optimisation on the population and returns the amount of fitness evaluations done during the optimisation.
+	
+	\item \texttt{std::vector <Individual> new\_gen(std::vector <Individual> old\_pop, std::vector <city\_node> node\_list, float elite\_rate, float mutation\_rate, float mutation\_size)}\\
+	This function generates a new generation by running selection, crossover and mutation with percentage chances for each of the chromosomes on the population and returning the newly created population.
+	
+	\item \texttt{std::vector <int> cross\_chromosome(std::vector <int> chromo\_1, std::vector <int> chromo\_2)}\\
+	This function crosses two chromosomes and returns the newly made chromosome.
+	
+	\item \texttt{std::vector <int> mutate\_chromosome(std::vector <int> target\_chromo, float mutation\_rate, float mutation\_size)}\\
+	This function potentially mutates a chromosome depending on a chance given as a parameter. A more definitive explanation on what mutation occurs is within the code comments.
+	
+	
+\end{enumerate}
+
+\subsubsection{Individual class functions}
+
+\begin{enumerate}
+	\item \texttt{Individual::Individual(std::vector <int> chromosome\_init, std::vector <city\_node> node\_list)}\\
+	This function is a class constructor that generates an object from the class template and the given variables.
+	
+	\item \texttt{double Individual::calculate\_fitness(std::vector <int> target\_chromo, std::vector <city\_node> node\_list)}\\
+	This function returns the total distance travelled according to the solution target\_chromo.
+	
+	\item \texttt{unsigned long Individual::local\_2\_opt(std::vector <city\_node> node\_list, int threshold)}\\
+	This function returns the amount of fitness evaluations committed during the optimisation of a solution chromosome inside the object.
+	
+	\item \texttt{std::vector <int> Individual::opt\_2\_swap(int i, int k)}\\
+	This function returns the chromosome after it has undergone a opt\_2 optimisation swap.
+	
+\end{enumerate}
+
+\section{Code Snippet References}
+Code references are available as inline comments for whenever they are used.
+
+\end{document}
